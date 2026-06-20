@@ -9,6 +9,7 @@ LoginButton.addEventListener('click', async () => {
     try {
         const resultado = await Login(usuario, senha);
         console.log(resultado);
+        alert('Login bem-sucedido');
     } catch (error) {
         alert('Falha no login');
     }
