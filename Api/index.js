@@ -21,20 +21,22 @@ function genToken() {
 
 
 
-const contas = []
+let contas = []
 
 class Conta {
-    constructor(login, password) {
+    constructor(name, login, password) {
+        this.name = name;
         this.login = login;
         this.password = password;
         this.token = "";
+        this.money = 0;
     }
 }
 
 
 function IsLoginValid(login){
-    if (login.length < 5 || login.length > 20){
-        return "a senha deve ter entre 5 e 20 caracteres"
+    if (login.length < 5 || login.length > 15){
+        return "o login deve ter entre 5 e 15 caracteres"
     }
     const temEspecial = /[^a-zA-Z0-9]/.test(login);
     if (temEspecial){
@@ -44,21 +46,33 @@ function IsLoginValid(login){
 }
 
 function IsPasswordValid(password){
-    if (password.length < 5 || password.length > 20){
-        return "a senha deve ter entre 5 e 20 caracteres"
+    if (password.length < 5 || password.length > 15){
+        return "a senha deve ter entre 5 e 15 caracteres"
     }
     return true
 }
 
-app.post('/login', (req, res) => {
+
+function isNameValid(name){
+    if (name.length < 1 || name.length > 15){
+        return "o nome deve ter entre 1 e 15 caracteres"
+    }
+    const temEspecial = /[^a-zA-Z0-9]/.test(name);
+    if (temEspecial){
+        return "o nome não pode conter caracteres especiais"
+    }
+    return true
+}
+
+app.post('/login', (req, res) => { // recebe login e password, deve retornar o token de acesso caso sejam validos
     let body = req.body;
     let { login, password } = body;
 
-    if (!login) {
+    if (typeof login !== "string") {
         return res.status(400).json({ error: 'Login ou Senha Invalido' });
     }
 
-    if (!password) {
+    if (typeof password !== "string") {
         return res.status(400).json({ error: 'Login ou Senha Invalido' });
     }
 
@@ -74,21 +88,28 @@ app.post('/login', (req, res) => {
 
     conta.token = genToken();
 
-    res.json({
-        conta: conta
-    });
+    res.json(conta);
 });
 
-app.post('/cadastro', (req, res) => {
+app.post('/cadastro', (req, res) => { // recebe name, login e password, deve cadastrar uma nova conta se forem validos e retornar a conta
     let body = req.body;
-    let { login, password } = body;
 
-    if (!login) {
-        return res.status(400).json({ error: 'Login ou Senha Invalido' });
+    if (typeof body !== "object") {
+        return res.status(400).json({ error: 'Dados de cadastro são obrigatórios' });
     }
 
-    if (!password) {
-        return res.status(400).json({ error: 'Login ou Senha Invalido' });
+    let { name, login, password } = body;
+
+    if (typeof login !== "string") {
+        return res.status(400).json({ error: 'Login é obrigatório' });
+    }
+
+    if (typeof password !== "string") {
+        return res.status(400).json({ error: 'Senha é obrigatória' });
+    }
+
+    if (typeof name !== "string") {
+        return res.status(400).json({ error: 'Nome é obrigatório' });
     }
 
     if (IsLoginValid(login) !== true) {
@@ -99,27 +120,34 @@ app.post('/cadastro', (req, res) => {
         return res.status(400).json({ error: IsPasswordValid(password) });
     }
 
+    if (isNameValid(name) !== true) {
+        return res.status(400).json({ error: isNameValid(name) });
+    }
+
     let conta = contas.find(c => c.login === login);
 
     if (conta) {
         return res.status(400).json({ error: 'Login já cadastrado' });
     }
 
-    conta = new Conta(login, password);
+    conta = new Conta(name, login, password);
     contas.push(conta);
     conta.token = genToken();
 
-    res.json({
-        token: conta.token,
-        conta: conta
-    });
+    res.json(conta);
 });
 
-app.post('/logout', (req, res) => {
+app.post('/logout', (req, res) => { // recebe o token e reseta o token da conta caso seja valido
     let body = req.body;
+
+    if (typeof body !== "object") {
+        return res.status(400).json({ error: 'Dados de cadastro são obrigatórios' });
+    }
+
     let { token } = body;
 
-    if (!token) {
+
+    if (typeof token !== "string") {
         return res.status(400).json({ error: 'Token Invalido' });
     }
 
@@ -129,47 +157,136 @@ app.post('/logout', (req, res) => {
         return res.status(400).json({ error: 'Token Invalido' });
     }
 
-
     conta.token = "";
 
-
     res.json({
-        "message": "Logout realizado com sucesso"
+        msg: "Logout realizado com sucesso"
     });
 });
 
-app.post('/delete', (req, res) => {
+app.post('/delete', (req, res) => { // recebe o token e deleta a conta caso seja valido
     let body = req.body;
-    let { login, password } = body;
 
-    if (!login) {
-        return res.status(400).json({ error: 'Login ou Senha Invalido' });
+    if (typeof body !== "object") {
+        return res.status(400).json({ error: 'Dados de cadastro são obrigatórios' });
     }
 
-    if (!password) {
-        return res.status(400).json({ error: 'Login ou Senha Invalido' });
+    let { token } = body;
+
+    if (typeof token !== "string") {
+        return res.status(400).json({ error: 'Token é obrigatório' });
     }
 
-    if (!token) {
+    let conta = contas.find(c => c.token === token);
+
+    if (!conta) {
         return res.status(400).json({ error: 'Token Invalido' });
     }
 
-    let conta = contas.find(c => c.login === login && c.password === password);
-
-    if (!conta) {
-        return res.status(400).json({ error: 'Login ou Senha Invalido' });
-    }
-
-    if (conta.password !== password) {
-        return res.status(400).json({ error: 'Login ou Senha Invalido' });
-    }
-
-    conta.token = genToken();
+    contas = contas.filter(c => c.token !== token);
 
     res.json({
-        conta: conta
+        msg: "Conta deletada com sucesso"
     });
 });
+
+
+app.post('/getName', (req, res) => { // recebe o token e retorna o nome da conta caso seja valido
+    let body = req.body;
+
+    if (typeof body !== "object") {
+        return res.status(400).json({ error: 'Dados de cadastro são obrigatórios' });
+    }
+
+    let { token } = body;
+
+    if (typeof token !== "string") {
+        return res.status(400).json({ error: 'Token Invalido' });
+    }
+
+    let conta = contas.find(c => c.token === token);
+
+    if (!conta) {
+        return res.status(400).json({ error: 'Token Invalido' });
+    }
+
+    res.json({
+        name: conta.name
+    });
+});
+
+app.post('/getMoney', (req, res) => { // recebe o token e retorna o dinheiro da conta caso seja valido
+    let body = req.body;
+
+    if (typeof body !== "object") {
+        return res.status(400).json({ error: 'Dados de cadastro são obrigatórios' });
+    }
+
+    let { token } = body;
+
+    if (typeof token !== "string") {
+        return res.status(400).json({ error: 'Token Invalido' });
+    }
+
+    let conta = contas.find(c => c.token === token);
+
+    if (!conta) {
+        return res.status(400).json({ error: 'Token Invalido' });
+    }
+
+    res.json({
+        money: conta.money
+    });
+})
+
+app.post('/sendMoney', (req, res) => { // recebe o token e a quantia de dinheiro que vai ser enviada
+    let body = req.body;
+
+    if (typeof body !== "object") {
+        return res.status(400).json({ error: 'Dados de cadastro são obrigatórios' });
+    }
+
+    let { token, amount, receiver } = body;
+
+
+    if (typeof token !== "string") {
+        return res.status(400).json({ error: 'Token Invalido' });
+    }
+
+    if (typeof amount !== "number"){
+        return res.status(400).json({ error: 'Saldo inválido' });
+    }
+
+    let conta = contas.find(c => c.token === token);
+
+    if (!conta) {
+        return res.status(400).json({ error: 'Token Invalido' });
+    }
+
+    let destinatario = contas.find(c => c.name === receiver);
+
+    if (!destinatario) {
+        return res.status(400).json({ error: 'Destinatário não encontrado' });
+    }
+
+    if (amount < 1) {
+        return res.status(400).json({ error: 'Saldo inválido' });
+    }
+
+    amount = Math.trunc(amount * 100) / 100;
+
+    if (amount > conta.money) {
+        return res.status(400).json({ error: 'Saldo insuficiente' });
+    }
+
+    conta.money -= amount;
+    destinatario.money += amount;
+
+    res.json({
+        msg: "dinheiro enviado com sucesso"
+    });
+})
+
 
 
 app.listen(PORT, () => {
