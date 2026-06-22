@@ -33,7 +33,6 @@ class Conta {
     }
 }
 
-
 function IsLoginValid(login){
     if (login.length < 5 || login.length > 15){
         return "o login deve ter entre 5 e 15 caracteres"
@@ -52,7 +51,6 @@ function IsPasswordValid(password){
     return true
 }
 
-
 function isNameValid(name){
     if (name.length < 1 || name.length > 15){
         return "o nome deve ter entre 1 e 15 caracteres"
@@ -69,21 +67,21 @@ app.post('/login', (req, res) => { // recebe login e password, deve retornar o t
     let { login, password } = body;
 
     if (typeof login !== "string") {
-        return res.status(400).json({ error: 'Login ou Senha Invalido' });
+        return res.status(400).json({ error: 'Login ou Senha inválido' });
     }
 
     if (typeof password !== "string") {
-        return res.status(400).json({ error: 'Login ou Senha Invalido' });
+        return res.status(400).json({ error: 'Login ou Senha inválido' });
     }
 
     let conta = contas.find(c => c.login === login);
 
     if (!conta) {
-        return res.status(400).json({ error: 'Login ou Senha Invalido' });
+        return res.status(400).json({ error: 'Login ou Senha inválido' });
     }
 
     if (conta.password !== password) {
-        return res.status(400).json({ error: 'Login ou Senha Invalido' });
+        return res.status(400).json({ error: 'Login ou Senha inválido' });
     }
 
     conta.token = genToken();
@@ -148,13 +146,13 @@ app.post('/logout', (req, res) => { // recebe o token e reseta o token da conta 
 
 
     if (typeof token !== "string") {
-        return res.status(400).json({ error: 'Token Invalido' });
+        return res.status(400).json({ error: 'Token inválido' });
     }
 
     let conta = contas.find(c => c.token === token);
 
     if (!conta) {
-        return res.status(400).json({ error: 'Token Invalido' });
+        return res.status(400).json({ error: 'Token inválido' });
     }
 
     conta.token = "";
@@ -180,7 +178,7 @@ app.post('/delete', (req, res) => { // recebe o token e deleta a conta caso seja
     let conta = contas.find(c => c.token === token);
 
     if (!conta) {
-        return res.status(400).json({ error: 'Token Invalido' });
+        return res.status(400).json({ error: 'Token inválido' });
     }
 
     contas = contas.filter(c => c.token !== token);
@@ -189,7 +187,6 @@ app.post('/delete', (req, res) => { // recebe o token e deleta a conta caso seja
         msg: "Conta deletada com sucesso"
     });
 });
-
 
 app.post('/getName', (req, res) => { // recebe o token e retorna o nome da conta caso seja valido
     let body = req.body;
@@ -201,13 +198,13 @@ app.post('/getName', (req, res) => { // recebe o token e retorna o nome da conta
     let { token } = body;
 
     if (typeof token !== "string") {
-        return res.status(400).json({ error: 'Token Invalido' });
+        return res.status(400).json({ error: 'Token inválido' });
     }
 
     let conta = contas.find(c => c.token === token);
 
     if (!conta) {
-        return res.status(400).json({ error: 'Token Invalido' });
+        return res.status(400).json({ error: 'Token inválido' });
     }
 
     res.json({
@@ -225,19 +222,19 @@ app.post('/getMoney', (req, res) => { // recebe o token e retorna o dinheiro da 
     let { token } = body;
 
     if (typeof token !== "string") {
-        return res.status(400).json({ error: 'Token Invalido' });
+        return res.status(400).json({ error: 'Token inválido' });
     }
 
     let conta = contas.find(c => c.token === token);
 
     if (!conta) {
-        return res.status(400).json({ error: 'Token Invalido' });
+        return res.status(400).json({ error: 'Token inválido' });
     }
 
     res.json({
         money: conta.money
     });
-})
+});
 
 app.post('/sendMoney', (req, res) => { // recebe o token e a quantia de dinheiro que vai ser enviada
     let body = req.body;
@@ -250,7 +247,7 @@ app.post('/sendMoney', (req, res) => { // recebe o token e a quantia de dinheiro
 
 
     if (typeof token !== "string") {
-        return res.status(400).json({ error: 'Token Invalido' });
+        return res.status(400).json({ error: 'Token inválido' });
     }
 
     if (typeof amount !== "number"){
@@ -260,7 +257,7 @@ app.post('/sendMoney', (req, res) => { // recebe o token e a quantia de dinheiro
     let conta = contas.find(c => c.token === token);
 
     if (!conta) {
-        return res.status(400).json({ error: 'Token Invalido' });
+        return res.status(400).json({ error: 'Token inválido' });
     }
 
     let destinatario = contas.find(c => c.name === receiver);
