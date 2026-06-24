@@ -134,7 +134,7 @@ app.post('/cadastro', (req, res) => { // recebe name, login e password, deve cad
         return res.status(400).json({ error: 'Nome já cadastrado' });
     }
 
-    conta = new Conta(name, login, password, 10);
+    conta = new Conta(name, login, password);
     contas.push(conta);
     conta.token = genToken();
 
@@ -256,9 +256,7 @@ app.post('/sendMoney', (req, res) => { // recebe o token e a quantia de dinheiro
         return res.status(400).json({ error: 'Token inválido' });
     }
 
-    
     amount = parseFloat(amount)
-    console.log(amount, typeof amount)
 
     if (typeof amount !== "number" || isNaN(amount)){
         return res.status(400).json({ error: 'Saldo inválido' });
@@ -286,7 +284,6 @@ app.post('/sendMoney', (req, res) => { // recebe o token e a quantia de dinheiro
 
     amount = Math.trunc(amount * 100) / 100;
 
-    console.log(amount, typeof amount)
 
     if (amount > conta.money) {
         return res.status(400).json({ error: 'Saldo insuficiente' });
