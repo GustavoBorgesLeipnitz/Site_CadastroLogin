@@ -1,0 +1,31 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="Wallet.css">
+    </head>
+    <body>
+        <div class="Box" style="background-color:bisque;">
+               <h1>Wallet</h1>
+        </div>
+     
+        <div class="Box">
+            <button onclick="window.location.href='../MainLogado/MainLogado.html'">Main Page</button>
+            <button id = "LogoutButton">Logout</button>
+        </div>
+        
+        <div class="Formulario">
+
+            <text id = "MoneyText">Your Money: 0</text>
+
+            <input id="RecieverInput"  type="text" placeholder="Reciever" >
+
+            <input id="AmountInput" placeholder="1" type ="number" min="1">
+
+            <button id="SendButton">
+                Enviar
+            </button>
+
+        </div>
+
+        <script type="module" src="Wallet.js"></script>
+    </body>
+</html>

@@ -24,12 +24,12 @@ function genToken() {
 let contas = []
 
 class Conta {
-    constructor(name, login, password) {
+    constructor(name, login, password, money = 0, token = "") {
         this.name = name;
         this.login = login;
         this.password = password;
+        this.money = money;
         this.token = "";
-        this.money = 0;
     }
 }
 
@@ -128,7 +128,13 @@ app.post('/cadastro', (req, res) => { // recebe name, login e password, deve cad
         return res.status(400).json({ error: 'Login já cadastrado' });
     }
 
-    conta = new Conta(name, login, password);
+    conta = contas.find(c => c.name === name);
+
+    if (conta) {
+        return res.status(400).json({ error: 'Nome já cadastrado' });
+    }
+
+    conta = new Conta(name, login, password, 10);
     contas.push(conta);
     conta.token = genToken();
 
@@ -250,7 +256,11 @@ app.post('/sendMoney', (req, res) => { // recebe o token e a quantia de dinheiro
         return res.status(400).json({ error: 'Token inválido' });
     }
 
-    if (typeof amount !== "number"){
+    
+    amount = parseFloat(amount)
+    console.log(amount, typeof amount)
+
+    if (typeof amount !== "number" || isNaN(amount)){
         return res.status(400).json({ error: 'Saldo inválido' });
     }
 
@@ -266,11 +276,17 @@ app.post('/sendMoney', (req, res) => { // recebe o token e a quantia de dinheiro
         return res.status(400).json({ error: 'Destinatário não encontrado' });
     }
 
+    if (conta.name == destinatario.name){
+        return res.status(400).json({ error: 'Você não pode enviar saldo para si mesmo.' });
+    }
+
     if (amount < 1) {
-        return res.status(400).json({ error: 'Saldo inválido' });
+        return res.status(400).json({ error: 'Saldo inválido, o valor inserido deve ser maior ou igual a 1.' });
     }
 
     amount = Math.trunc(amount * 100) / 100;
+
+    console.log(amount, typeof amount)
 
     if (amount > conta.money) {
         return res.status(400).json({ error: 'Saldo insuficiente' });
